@@ -230,7 +230,7 @@ class HumanEnemy {
             this.shootCooldown--;
             if (this.shootCooldown <= 0 && distance < this.shootRange) {
                 this.shoot();
-                this.shootCooldown = 60;
+                this.shootCooldown = 120;
             }
         }
 
@@ -343,7 +343,7 @@ function shoot() {
         for (let enemy of enemies) {
             if (intersect.object.parent === enemy.model || intersect.object === enemy.model) {
                 enemy.takeDamage(weapon.damage);
-                updateMessage(`Hit! +${weapon.damage} damage`);
+                updateMessage(`Hit! +${weapon.damage} damage | Enemy Health: ${Math.max(0, enemy.health)}/${enemy.maxHealth}`);
 
                 if (enemy.health <= 0) {
                     enemy.remove();
