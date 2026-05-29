@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doom-Style 3D Shooter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #0a0e27;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .game-container {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            height: 100vh;
+        }
+
+        #gameCanvas {
+            flex: 1;
+            cursor: crosshair;
+            display: block;
+        }
+
+        .sidebar {
+            background: rgba(0, 0, 0, 0.95);
+            padding: 20px;
+            border-left: 3px solid #ff0000;
+            border-right: 3px solid #ff0000;
+            min-width: 280px;
+            font-size: 13px;
+            overflow-y: auto;
+            height: 100vh;
+            box-shadow: inset 0 0 20px rgba(255, 0, 0, 0.2);
+        }
+
+        .stats {
+            margin-bottom: 25px;
+            border-bottom: 2px solid #ff0000;
+            padding-bottom: 15px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            color: #ff0000;
+        }
+
+        .stat-value {
+            color: #ffff00;
+        }
+
+        .health-bar {
+            width: 100%;
+            height: 20px;
+            background: #333;
+            border: 2px solid #ff0000;
+            margin: 10px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .health-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff0000, #aa0000);
+            width: 100%;
+            transition: width 0.2s;
+        }
+
+        .ammo-bar {
+            width: 100%;
+            height: 15px;
+            background: #333;
+            border: 1px solid #ffff00;
+            margin: 5px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ammo-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffff00, #ffaa00);
+            width: 100%;
+            transition: width 0.1s;
+        }
+
+        .weapons-section {
+            margin-top: 20px;
+            border-top: 2px solid #ff0000;
+            padding-top: 15px;
+        }
+
+        .weapon-btn {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            background: #1a0000;
+            border: 2px solid #ff0000;
+            color: #ff0000;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .weapon-btn:hover {
+            background: #ff0000;
+            color: #000;
+        }
+
+        .weapon-btn.active {
+            background: #ff0000;
+            color: #000;
+            box-shadow: 0 0 10px #ff0000;
+            text-transform: uppercase;
+        }
+
+        .round-status {
+            margin-top: 20px;
+            padding: 15px;
+            background: #1a0000;
+            border: 2px solid #ff0000;
+            border-radius: 3px;
+            text-align: center;
+        }
+
+        .round-text {
+            color: #ff0000;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .controls {
+            margin-top: 20px;
+            padding: 15px;
+            background: #1a0000;
+            border: 2px solid #ff0000;
+            border-radius: 3px;
+        }
+
+        .control-text {
+            margin: 5px 0;
+            font-size: 12px;
+            color: #ffff00;
+        }
+
+        .high-score {
+            margin-top: 20px;
+            padding: 15px;
+            background: #1a0000;
+            border: 2px solid #ffff00;
+            border-radius: 3px;
+            text-align: center;
+        }
+
+        .high-score-title {
+            color: #ffff00;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .high-score-value {
+            color: #ffff00;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .message {
+            margin-top: 15px;
+            padding: 10px;
+            background: #2a0000;
+            border: 2px solid #ff0000;
+            border-radius: 3px;
+            color: #ffff00;
+            text-align: center;
+            min-height: 30px;
+            font-size: 12px;
+            animation: pulse 0.5s;
+        }
+
+        @keyframes pulse {
+            0% { border-color: #ffff00; }
+            50% { border-color: #ff0000; }
+            100% { border-color: #ff0000; }
+        }
+
+        h3 {
+            color: #ff0000 !important;
+            text-transform: uppercase;
+            font-size: 14px;
+            letter-spacing: 1px;
+        }
+
+        .reload-indicator {
+            margin-top: 10px;
+            padding: 10px;
+            background: #2a0000;
+            border: 2px solid #ffaa00;
+            border-radius: 3px;
+            text-align: center;
+            color: #ffaa00;
+            font-weight: bold;
+        }
+
+        .reload-bar {
+            width: 100%;
+            height: 10px;
+            background: #333;
+            border: 1px solid #ffaa00;
+            margin: 5px 0;
+            position: relative;
+            overflow: hidden;
+            display: none;
+        }
+
+        .reload-bar.active {
+            display: block;
+        }
+
+        .reload-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffaa00, #ff6600);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <canvas id="gameCanvas"></canvas>
+        
+        <div class="sidebar">
+            <div class="stats">
+                <h3>STATS</h3>
+                <div class="stat-item">
+                    <span class="stat-label">KILLS:</span>
+                    <span class="stat-value" id="kills">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">DEATHS:</span>
+                    <span class="stat-value" id="deaths">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">SCORE:</span>
+                    <span class="stat-value" id="score">0</span>
+                </div>
+            </div>
+
+            <div class="stats">
+                <h3>PLAYER</h3>
+                <div class="stat-item">
+                    <span class="stat-label">HP:</span>
+                    <span class="stat-value" id="hp">100</span>
+                </div>
+                <div class="health-bar">
+                    <div class="health-fill" id="healthFill"></div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">AMMO:</span>
+                    <span class="stat-value" id="ammo">30</span>
+                </div>
+                <div class="ammo-bar">
+                    <div class="ammo-fill" id="ammoFill"></div>
+                </div>
+                <div class="reload-indicator" id="reloadIndicator" style="display: none;">
+                    RELOADING...
+                    <div class="reload-bar active" id="reloadBar">
+                        <div class="reload-fill" id="reloadFill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="weapons-section">
+                <h3>WEAPONS</h3>
+                <button class="weapon-btn active" data-weapon="pistol">🔫 Pistol (1)</button>
+                <button class="weapon-btn" data-weapon="rifle">🔫 Rifle (2)</button>
+                <button class="weapon-btn" data-weapon="shotgun">🔫 Shotgun (3)</button>
+                <button class="weapon-btn" data-weapon="sniper">🔫 Sniper (4)</button>
+            </div>
+
+            <div class="round-status">
+                <div class="stat-item">
+                    <span class="stat-label">ROUND:</span>
+                    <span class="stat-value" id="round">1</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">ENEMIES:</span>
+                    <span class="stat-value" id="enemyCount">5</span>
+                </div>
+            </div>
+
+            <div class="controls">
+                <h3>CONTROLS</h3>
+                <div class="control-text">W/A/S/D - Move</div>
+                <div class="control-text">RIGHT CLICK - Look</div>
+                <div class="control-text">LEFT CLICK - Shoot</div>
+                <div class="control-text">1/2/3/4 - Weapons</div>
+                <div class="control-text">R - Reload</div>
+            </div>
+
+            <div class="high-score">
+                <div class="high-score-title">HIGH SCORE</div>
+                <div class="high-score-value" id="highScore">0</div>
+            </div>
+
+            <div class="message" id="message">Welcome to DOOM! Click to start. Press ESC for pointer.</div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
