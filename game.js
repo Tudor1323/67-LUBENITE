@@ -19,7 +19,8 @@ const player = {
     shootCooldown: 0,
     reloadTime: 0,
     reloadDuration: 0,
-    isReloading: false
+    isReloading: false,
+    headRotation: 0 // Track head rotation
 };
 
 
@@ -461,6 +462,10 @@ function update() {
     camera.position.z = Math.max(-190, Math.min(190, camera.position.z));
     camera.position.y = 5;
 
+    // Apply head rotation to camera
+    camera.rotation.order = 'YXZ';
+    camera.rotation.y = player.headRotation;
+
     // Cooldowns
     player.shootCooldown = Math.max(0, player.shootCooldown - 1);
 
@@ -519,13 +524,11 @@ function onMouseMove(e) {
     const movementX = e.movementX || e.mozMovementX || 0;
     const movementY = e.movementY || e.mozMovementY || 0;
 
-    const euler = new THREE.Euler(0, 0, 0, 'YXZ');
-    euler.setFromQuaternion(camera.quaternion);
-
-    euler.setFromAxisAngle(new THREE.Vector3(0, 1, 0), -movementX * 0.005);
-    euler.rotateOnWorldAxis(new THREE.Vector3(1, 0, 0), -movementY * 0.005);
-
-    camera.quaternion.setFromEuler(euler);
+    // Only rotate head left/right with horizontal mouse movement
+    player.headRotation -= movementX * 0.005;
+    
+    // Clamp head rotation to reasonable limits (can look left/right but not behind)
+    player.headRotation = Math.max(-Math.PI * 0.8, Math.min(Math.PI * 0.8, player.headRotation));
 }
 
 function onMouseDown(e) {
